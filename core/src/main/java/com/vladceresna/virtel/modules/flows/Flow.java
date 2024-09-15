@@ -41,7 +41,7 @@ public class Flow {
                 case '"':
 
                 default:
-                    
+
             }
         }
     }

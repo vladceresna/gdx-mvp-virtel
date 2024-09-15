@@ -5,7 +5,7 @@ import com.vladceresna.virtel.modules.system.SystemOperator;
 public class NetOperator {
     private static SystemOperator instance;
 
-    public SystemOperator(){
+    public NetOperator(){
 
     }
     public static SystemOperator getInstance() {

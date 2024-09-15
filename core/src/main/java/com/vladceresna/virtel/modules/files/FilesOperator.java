@@ -5,7 +5,7 @@ import com.vladceresna.virtel.modules.system.SystemOperator;
 public class FilesOperator {
     private static SystemOperator instance;
 
-    public SystemOperator(){
+    public FilesOperator(){
 
     }
     public static SystemOperator getInstance() {
