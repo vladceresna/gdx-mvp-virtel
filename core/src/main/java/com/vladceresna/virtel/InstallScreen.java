@@ -1,12 +1,14 @@
 package com.vladceresna.virtel;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -19,7 +21,17 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+import jdk.internal.net.http.HttpRequestImpl;
 
 /** First screen of the application. Displayed after the application is created. */
 public class InstallScreen implements Screen {
@@ -93,26 +105,42 @@ public class InstallScreen implements Screen {
         TextButton textButton = new TextButton("Install", skin,"default");
         textButton.pad(10);
         textButton.addListener(new ChangeListener() {
+            @SuppressWarnings("NewApi")
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("Button clicked: "+textField.getText());
+                String path = textField.getText();
 
-                File file = new File(textField.getText());
-                if(!file.exists()){
-                    if(file.mkdirs()){
-                        File config = new File(Gdx.files.getExternalStoragePath()+".virtel/config.txt");
-                        if(!config.exists()){
-                            try {
-                                boolean newFile = config.createNewFile();
-                                game.setScreen(new AppScreen(game, "vladceresna.virtel.launcher"));
-                                dispose();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
+                File launcherPath = new File(path+"virtel/apps/vladceresna.virtel.launcher/bin/");
+                File launcherFile = new File(path+"virtel/apps/vladceresna.virtel.launcher/bin/start.steps");
 
+                //make virtel system
+                launcherPath.mkdirs();
+                try {
+                    launcherFile.createNewFile();
+                    InputStream in = new URL("https://drive.usercontent.google.com/uc?id=1xPqJuiJO1E9C7GP91E0c5cYPe5xnDCOb").openStream();
+                    Files.copy(in, Paths.get(launcherFile.toURI()), StandardCopyOption.REPLACE_EXISTING);
+                    in.close();
+                } catch (IOException e) {
+                    System.out.println("Input isn`t normal");
+                }
+
+                //make config file
+                File config = new File(Gdx.files.getExternalStoragePath() + ".virtel/config.txt");
+                File configFolder = new File(Gdx.files.getExternalStoragePath() + ".virtel/");
+                if (!config.exists()) {
+                    try {
+                        configFolder.mkdirs();
+                        boolean newFile = config.createNewFile();
+                        FileWriter writer = new FileWriter(config, true);
+                        writer.write(path+"virtel/");
+                        writer.close();
+                        game.setScreen(new StartupScreen(game));
+                        dispose();
+                    } catch (IOException e) {
+                        System.out.println("Thats wrong: "+e.getMessage());
                     }
                 }
+
             }
         });
 

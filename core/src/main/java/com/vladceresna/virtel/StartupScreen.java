@@ -16,6 +16,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class StartupScreen implements Screen {
 
@@ -70,8 +74,30 @@ public class StartupScreen implements Screen {
         File config = new File(Gdx.files.getExternalStoragePath()+".virtel/config.txt");
         if(config.exists()){
             //TODO:load all needed tools
-            game.setScreen(new AppScreen(game, "vladceresna.virtel.launcher"));
-            dispose();
+            try {
+                FileReader reader = new FileReader(config);
+                Scanner scan = new Scanner(reader);
+                int i = 1;
+                String virtelPath = "";
+                while (scan.hasNextLine()) {
+                    virtelPath += scan.nextLine();
+                    i++;
+                }
+                scan.close();
+                reader.close();
+                if(!new File(virtelPath).exists()){
+                    game.setScreen(new InstallScreen(game));
+                    dispose();
+                } else {
+                    game.setScreen(new AppScreen(game, "vladceresna.virtel.launcher", virtelPath));
+                    dispose();
+                }
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         } else {
             game.setScreen(new InstallScreen(game));
             dispose();
