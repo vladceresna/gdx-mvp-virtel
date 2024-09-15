@@ -3,6 +3,7 @@ package com.vladceresna.virtel;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.vladceresna.virtel.modules.system.SystemOperator;
 
 /** First screen of the application. Displayed after the application is created. */
 public class AppScreen implements Screen {
@@ -13,13 +14,14 @@ public class AppScreen implements Screen {
     public AppScreen(final Main game, String appId, String virtelPath){
         this.game = game;
         this.appId = appId;
+        SystemOperator systemOperator = SystemOperator.getInstance();
+        systemOperator.start(virtelPath);
     }
 
 
 
     @Override
     public void show() {
-
         // Prepare your screen here.
     }
 

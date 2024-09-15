@@ -89,6 +89,8 @@ public class StartupScreen implements Screen {
                     game.setScreen(new InstallScreen(game));
                     dispose();
                 } else {
+                    //System.out.println(config.getPath());
+                    //System.out.println(virtelPath);
                     game.setScreen(new AppScreen(game, "vladceresna.virtel.launcher", virtelPath));
                     dispose();
                 }
