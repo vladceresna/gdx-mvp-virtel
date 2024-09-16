@@ -14,11 +14,13 @@ import lombok.Data;
 @Data
 public class Flow {
     private final UUID flowId;
+    private ActionsWrapper actionsWrapper;
 
     private String appId;
     public Flow(String appId) {
         this.appId = appId;
         this.flowId = UUID.randomUUID();
+        this.actionsWrapper = new ActionsWrapper();
     }
 
     public UUID getFlowId() {
@@ -38,6 +40,7 @@ public class Flow {
                     exec(sc.nextLine());
                 } catch (Exception e){
                     System.out.println("Error on line "+lineNumber+": "+e.getMessage());
+                    e.printStackTrace();
                     break;
                 }
                 lineNumber++;
@@ -101,9 +104,22 @@ public class Flow {
             case "sys":
                 switch (step.cmd){
                     case "out":
-                        for (String arg:step.args){
-                            System.out.print(arg);
-                        }
+                        actionsWrapper.sysOut(step.args);
+                        break;
+                    case "in":
+                        actionsWrapper.sysIn(step.args);
+                        break;
+                    default:
+                        throw new Exception("Undefined command: "+step.cmd+" in module: "+step.mod);
+                }
+                break;
+            case "var":
+                switch (step.cmd){
+                    case "set":
+                        actionsWrapper.varSet(step.args);
+                        break;
+                    case "del":
+                        actionsWrapper.varDel(step.args);
                         break;
                     default:
                         throw new Exception("Undefined command: "+step.cmd+" in module: "+step.mod);
