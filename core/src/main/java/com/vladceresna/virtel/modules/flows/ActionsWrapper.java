@@ -12,19 +12,30 @@ import java.util.Scanner;
 
 public class ActionsWrapper {
     private DataOperator dataOperator = DataOperator.getInstance();
-    private Scanner scanner;
     private FileReader reader;
     private FileWriter writer;
     private Logger logger = new Logger("VRTL");
 
     /**sys out args**/
     public void sysOut(List<String> args) throws Exception {
-        for (String arg:args) System.out.print(unwrap(arg, ArgType.CLEAR_VALUE));
+        for (String arg : args) {
+            String value = unwrap(arg, ArgType.CLEAR_VALUE);
+            value = value.replaceAll("\\\\n", "\n");
+            System.out.print(value);
+        }
     }
-    /**sys in var**/
+
+    /**
+     * sys in var not worked
+     **/
     public void sysIn(List<String> args) throws Exception {
-        scanner = new Scanner(System.in);
-        scanner.close();
+        Scanner scanner = new Scanner(System.in);
+        String s = scanner.nextLine();
+        dataOperator.saveData(
+            DataType.VAR,
+            args.get(0),
+            s
+        );
     }
     /**var set value var**/
     public void varSet(List<String> args) throws Exception {

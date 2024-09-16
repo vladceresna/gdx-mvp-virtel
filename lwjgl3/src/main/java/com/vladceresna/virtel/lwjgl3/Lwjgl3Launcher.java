@@ -7,8 +7,13 @@ import com.vladceresna.virtel.Main;
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
-        if (StartupHelper.startNewJvmIfRequired()) return; // This handles macOS support and helps on Windows.
-        createApplication();
+        try {
+            if (StartupHelper.startNewJvmIfRequired())
+                return; // This handles macOS support and helps on Windows.
+            createApplication();
+        } catch (Exception e) {
+            System.out.println("Virtel Platform start code: 1");
+        }
     }
 
     private static Lwjgl3Application createApplication() {

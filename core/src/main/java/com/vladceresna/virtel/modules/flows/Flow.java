@@ -1,12 +1,10 @@
 package com.vladceresna.virtel.modules.flows;
 
-import com.badlogic.gdx.utils.Logger;
 import com.vladceresna.virtel.modules.apps.App;
 import com.vladceresna.virtel.modules.apps.AppsOperator;
 
 import java.io.File;
-import java.io.FileReader;
-import java.util.Scanner;
+import java.nio.file.Files;
 import java.util.UUID;
 
 import lombok.Data;
@@ -27,82 +25,90 @@ public class Flow {
         return flowId;
     }
 
+    @SuppressWarnings("NewApi")
     public void run(String fileName){
         try {
             AppsOperator appsOperator = AppsOperator.getInstance();
             App appById = appsOperator.getAppById(appId);
             File file = appById.getBinWithInAppPath(fileName);
-            FileReader reader = new FileReader(file);
-            Scanner sc = new Scanner(reader);
+
+            String code = Files.readString(file.toPath());
+            System.out.println(code);//TODO:edit
+
             int lineNumber = 0;
-            while(sc.hasNextLine()) {
-                try {
-                    exec(sc.nextLine());
-                } catch (Exception e){
-                    System.out.println("Error on line "+lineNumber+": "+e.getMessage());
-                    e.printStackTrace();
-                    break;
+            String lastString = "";
+            Step step = new Step();
+            byte word = 0;
+            boolean inValue = false;
+            boolean displayer = false;
+            //lexing
+            for (int i = 0; i < code.length(); i++) {
+                char c = code.charAt(i);
+                switch (c) {
+                    case ' ':
+                        if (inValue) {
+                            lastString += ' ';
+                        } else {
+                            switch (word) {
+                                case 0:
+                                    step.mod = lastString.trim();
+                                    break;
+                                case 1:
+                                    step.cmd = lastString;
+                                    break;
+                                default:
+                                    step.args.add(lastString);
+                                    break;
+                            }
+                            lastString = "";
+                            word++;
+                        }
+                        if (displayer) displayer = false;
+                        break;
+                    case '\\':
+                        displayer = !displayer;
+                        lastString += '\\';
+                        break;
+                    case '"':
+                        if (displayer) {
+                            displayer = false;
+                        } else {
+                            inValue = !inValue;
+                            lastString += '"';
+                        }
+                        break;
+                    case ';':
+                        step.args.add(lastString);
+                        try {
+                            exec(step);
+                        } catch (Exception e) {
+                            System.out.println("Error on line " + lineNumber + ": " + e.getMessage());
+                            e.printStackTrace();
+                            break;
+                        }
+                        lineNumber++;
+                        lastString = "";
+                        step = new Step();
+                        word = 0;
+                        inValue = false;
+                        if (displayer) displayer = false;
+                        break;
+                    default:
+                        lastString += c;
+                        if (displayer) displayer = false;
+                        break;
                 }
-                lineNumber++;
             }
-            sc.close();
-            reader.close();
         } catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void exec(String line) throws Exception{
-        String lastString = "";
-        Step step = new Step();
-        byte word = 0;
-        boolean inValue = false;
-        boolean displayer = false;
-        //lexing
-        for (int i = 0; i<line.length(); i++){
-            char c = line.charAt(i);
-            switch (c){
-                case ' ':
-                    if(inValue){
-                        lastString += ' ';
-                    }else{
-                        switch (word){
-                            case 0:
-                                step.mod = lastString;
-                                break;
-                            case 1:
-                                step.cmd = lastString;
-                                break;
-                            default:
-                                step.args.add(lastString);
-                                break;
-                        }
-                        lastString = "";
-                        word++;
-                    }
-                    break;
-                case '\\':
-                    displayer = !displayer;
-                    break;
-                case '"':
-                    if(displayer){
-                        displayer = false;
-                    } else {
-                        inValue = !inValue;
-                        lastString += '"';
-                    }
-                    break;
-                default:
-                    lastString += c;
-                    break;
-            }
-        }
-        step.args.add(lastString);
-
+    public void exec(Step step) throws Exception {
         //parsing
         switch (step.mod) {
             case "sys":
-                switch (step.cmd){
+                switch (step.cmd) {
                     case "out":
                         actionsWrapper.sysOut(step.args);
                         break;
