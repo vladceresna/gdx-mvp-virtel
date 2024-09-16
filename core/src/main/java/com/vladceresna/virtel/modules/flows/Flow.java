@@ -1,5 +1,6 @@
 package com.vladceresna.virtel.modules.flows;
 
+import com.badlogic.gdx.utils.Logger;
 import com.vladceresna.virtel.modules.apps.App;
 import com.vladceresna.virtel.modules.apps.AppsOperator;
 
@@ -104,7 +105,12 @@ public class Flow {
                             System.out.print(arg);
                         }
                         break;
+                    default:
+                        throw new Exception("Undefined command: "+step.cmd+" in module: "+step.mod);
                 }
+                break;
+            default:
+                throw new Exception("Undefined module: "+step.mod);
         }
     }
 
